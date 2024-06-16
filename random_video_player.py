@@ -2,20 +2,23 @@ import obspython as obs
 from Helpers import obs_helper
 from Helpers import file_helper
 from Helpers.list_randomizer import ListRandomizer
+import os
 
 current_video_path = ""
 video_source_name = ""
 initialized = False
-directories = [
-    r"E:\Projects\Stream\Video\VOD\2024 - Part 1\Clips\Landscape",
-    r"E:\Projects\Stream\Video\VOD\2023 - Part 2\Clips\Landscape",
-    r"E:\Projects\Stream\Video\VOD\2023 - Part 1\Clips\Landscape",
-    r"E:\Projects\Stream\Video\VOD\2022 - Part 2\Clips\Landscape",
-    r"E:\Projects\Stream\Video\VOD\2022 - Part 1\Clips\Landscape",
-    r"E:\Projects\Stream\Video\VOD\2021 - Part 2\Clips\Landscape",
-    r"E:\Projects\Stream\Video\VOD\2021 - Part 1\Clips\Landscape",
-    r"E:\Projects\Stream\Video\VOD\2020 - Part 2\Clips\Landscape"
-]
+# directories = [
+#     r"E:\Projects\Stream\Video\VOD\2024 - Part 1\Clips\Landscape",
+#     r"E:\Projects\Stream\Video\VOD\2023 - Part 2\Clips\Landscape",
+#     r"E:\Projects\Stream\Video\VOD\2023 - Part 1\Clips\Landscape",
+#     r"E:\Projects\Stream\Video\VOD\2022 - Part 2\Clips\Landscape",
+#     r"E:\Projects\Stream\Video\VOD\2022 - Part 1\Clips\Landscape",
+#     r"E:\Projects\Stream\Video\VOD\2021 - Part 2\Clips\Landscape",
+#     r"E:\Projects\Stream\Video\VOD\2021 - Part 1\Clips\Landscape",
+#     r"E:\Projects\Stream\Video\VOD\2020 - Part 2\Clips\Landscape"
+# ]
+
+directories = []
 video_files = []
 list_randomizer: ListRandomizer
 list_randomizer_file_path = file_helper.get_script_env_folder_path() + r"\list_randomizer.json"
@@ -35,7 +38,6 @@ def initialize():
     video_files = file_helper.get_files_from_directories(directories)
     list_randomizer = ListRandomizer(video_files)
     json_obj = file_helper.load_json(list_randomizer_file_path)
-    print(json_obj["current_last_index"])
 
     if video_source_name:
         with obs_helper.Source(video_source_name) as video_source:
@@ -49,14 +51,6 @@ def initialize():
 
                 initialized = True
                 print("random_video_player.py initialized")
-
-                properties = obs.obs_source_properties(video_source)
-                obs.obs_properties_add_text(properties,
-                                               "Folders",
-                                               "Add your folders containing videos",
-                                               obs.OBS_TEXT_MULTILINE)
-                obs.obs_source_update_properties(video_source)
-                obs.obs_properties_destroy(properties)
 
 
 def cleanup():
@@ -73,8 +67,11 @@ def cleanup():
 
 def script_load(settings):
     global video_source_name
+    global directories
 
     video_source_name = obs.obs_data_get_string(settings, "video_source_name")
+    directories = obs.obs_data_get_string(settings, "folders").splitlines()
+    print(directories)
 
     obs.timer_add(initialize, 5000)
 
@@ -89,13 +86,46 @@ def script_description():
 
 def script_update(settings):
     global video_source_name
+    global directories
 
     video_source_name = obs.obs_data_get_string(settings, "video_source_name")
+    directories = obs.obs_data_get_string(settings, "folders").splitlines()
+    data_array = obs.obs_data_get_array(settings, "folder_list")
+
+    # Initialize empty lists to store folders and files
+    folder_list = []
+    file_list = []
+
+    # Check if data_array is valid
+    if data_array:
+        count = obs.obs_data_array_count(data_array)
+        for i in range(count):
+            item = obs.obs_data_array_item(data_array, i)
+            if item:
+                path = obs.obs_data_get_string(item, "value")
+                if os.path.isdir(path):
+                    folder_list.append(path)
+                elif os.path.isfile(path):
+                    file_list.append(path)
+                obs.obs_data_release(item)
+        obs.obs_data_array_release(data_array)
+
+    # Print the lists of folders and files
+    print("Folders:", folder_list)
+    print("Files:", file_list)
 
 
 def script_properties():
     props = obs.obs_properties_create()
     obs.obs_properties_add_text(props, "video_source_name", "Source Name", obs.OBS_TEXT_DEFAULT)
+    obs.obs_properties_add_text(props,
+                                "folders",
+                                "Add your folders containing videos",
+                                obs.OBS_TEXT_MULTILINE)
+    obs.obs_properties_add_editable_list(props, "folder_list", "Add folders",
+                                                obs.OBS_EDITABLE_LIST_TYPE_FILES, ".mp4",
+                                                r"E:\Projects\Stream\Video\VOD\2024 - Part 1\Clips\Landscape")
+
     return props
 
 
