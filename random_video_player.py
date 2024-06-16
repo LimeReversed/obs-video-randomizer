@@ -1,10 +1,7 @@
-import importlib
-# obs = __import__("C:/Program Files/obs-studio/data/obs-scripting/64bit/obspython.py")
 import obspython as obs
 from Helpers import obs_helper
 from Helpers import file_helper
 from Helpers.list_randomizer import ListRandomizer
-import os
 
 current_video_path = ""
 video_source_name = ""
