@@ -18,6 +18,24 @@ class ListRandomizer(object):
         new_list_randomizer._current_last_index = json_object["current_last_index"]
         return new_list_randomizer
 
+    @staticmethod
+    def construct_from_obs_data(full_video_list, list_of_used):
+        used = []
+        not_used = []
+        for i in range(len(full_video_list)):
+            item = full_video_list[i]
+            if item in list_of_used:
+                used.append(item)
+            else:
+                not_used.append(item)
+
+        new_list_randomizer = ListRandomizer(not_used)
+        new_list_randomizer.extend(used, True)
+        return new_list_randomizer
+
+    def get_used(self):
+        return self._list[self._current_last_index:len(self._list)]
+
     def get_next_element(self):
         if self._current_last_index < 0:
             self._current_last_index = len(self._list) - 1
@@ -33,16 +51,9 @@ class ListRandomizer(object):
 
         return next_element
 
-    def merge(self, new_list_randomizer: "ListRandomizer"):
+    def extend(self, new_list: list, add_as_used: bool):
 
-        used = new_list_randomizer._list[new_list_randomizer._current_last_index:len(new_list_randomizer._list)]
-        not_used = new_list_randomizer._list[0:new_list_randomizer._current_last_index + 1]
-        self.extend(not_used, False)
-        self.extend(used, True)
-
-    def extend(self, new_list: list, mark_as_used: bool):
-
-        if mark_as_used:
+        if add_as_used:
             self._list.extend(new_list)
         else:
             new_list.extend(self._list)

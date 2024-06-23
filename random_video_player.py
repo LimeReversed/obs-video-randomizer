@@ -14,7 +14,7 @@ list_randomizer_file_path = file_helper.get_script_env_folder_path() + r"\list_r
 
 
 # OBS script functions
-def initialize():
+def initialize(settings):
     global video_files
     global video_source_name
     global initialized
@@ -23,9 +23,10 @@ def initialize():
     # ATM this method is a call back for a timer in script_load
     obs.remove_current_callback()
 
-    # Initialize video play
-    list_randomizer = ListRandomizer(video_files)
+    data_array = obs.obs_data_get_array(settings, "folder_list")
+    video_files = obs_helper.extract_paths_from_names(obs_helper.extract_array_from_array_data(data_array))
 
+    # Initialize video play
     if video_source_name:
         with obs_helper.Source(video_source_name) as video_source:
             if video_source:
@@ -33,22 +34,35 @@ def initialize():
                 obs.obs_frontend_add_event_callback(on_event)
                 register_media_ended_signal_handler()
 
-                if obs.obs_source_showing(video_source):
-                    play_next_video()
+                with obs_helper.SourceSettings(video_source) as video_source_settings:
+                    if video_source_settings:
+                        print("GOT TO VIDEO SOURCE SETTINGS IN INITIALIZATION")
+                        used_videos = obs_helper.extract_array_from_array_data(
+                            obs.obs_data_get_array(video_source_settings, "used_videos"))
+                        print("used_videos")
+                        print(used_videos)
+
+                        list_randomizer = ListRandomizer.construct_from_obs_data(video_files, used_videos)
 
                 initialized = True
                 print("random_video_player.py initialized")
 
+                if obs.obs_source_showing(video_source):
+                    play_next_video()
+
 
 def cleanup():
     global initialized
+    global video_source_name
+    global list_randomizer
 
     if initialized:
         stop_video()
         obs.obs_frontend_remove_event_callback(on_event)
         deregister_media_ended_signal_handler()
-        # file_helper.save_json(list_randomizer.to_json(), list_randomizer_file_path)
+        obs_helper.set_array(video_source_name, list_randomizer.get_used())
         initialized = False
+
         print("Cleanup done")
 
 
@@ -57,10 +71,11 @@ def script_load(settings):
     global video_files
 
     video_source_name = obs.obs_data_get_string(settings, "video_source_name")
-    data_array = obs.obs_data_get_array(settings, "folder_list")
-    video_files = obs_helper.extract_array_from_array_data(data_array)
 
-    obs.timer_add(initialize, 3000)
+    def initialize_with_settings():
+        initialize(settings)
+
+    obs.timer_add(initialize_with_settings, 3000)
 
 
 def script_unload():
