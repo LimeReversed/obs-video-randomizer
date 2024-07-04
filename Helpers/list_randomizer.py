@@ -19,7 +19,7 @@ class ListRandomizer(object):
         return new_list_randomizer
 
     @staticmethod
-    def construct_from_obs_data(full_video_list, list_of_used):
+    def construct_from_video_list(full_video_list, list_of_used):
         used = []
         not_used = []
         for i in range(len(full_video_list)):
@@ -34,7 +34,7 @@ class ListRandomizer(object):
         return new_list_randomizer
 
     def get_used(self):
-        return self._list[self._current_last_index:len(self._list)]
+        return self._list[self._current_last_index : len(self._list)]
 
     def get_next_element(self):
         if self._current_last_index < 0:
