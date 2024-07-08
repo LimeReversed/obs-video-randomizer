@@ -31,12 +31,17 @@ class ListRandomizer(object):
 
         new_list_randomizer = ListRandomizer(not_used)
         new_list_randomizer.extend(used, True)
+
         return new_list_randomizer
 
     def get_used(self):
-        return self._list[self._current_last_index : len(self._list)]
+        return self._list[self._current_last_index: len(self._list)]
 
     def get_next_element(self):
+        if (len(self._list)) == 0:
+            print("Could not randomize video. Video list empty")
+            return None
+
         if self._current_last_index < 0:
             self._current_last_index = len(self._list) - 1
 
@@ -56,5 +61,6 @@ class ListRandomizer(object):
         if add_as_used:
             self._list.extend(new_list)
         else:
-            new_list.extend(self._list)
             self._current_last_index += len(new_list)
+            new_list.extend(self._list)
+            self._list = new_list
