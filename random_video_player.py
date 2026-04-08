@@ -51,6 +51,10 @@ def cleanup():
         initialized = False
         print("Cleanup done")
 
+def check_initialized():
+    if obs.obs_initialized():
+        obs.remove_current_callback()
+        initialize()
 
 def script_load(settings):
     global video_source_name
@@ -59,8 +63,9 @@ def script_load(settings):
     video_source_name = obs.obs_data_get_string(settings, "video_source_name")
     data_array = obs.obs_data_get_array(settings, "folder_list")
     video_files = obs_helper.extract_array_from_array_data(data_array)
+    print("Starting initialization...")
 
-    obs.timer_add(initialize, 3000)
+    obs.timer_add(check_initialized, 1000)
 
 
 def script_unload():
@@ -108,6 +113,7 @@ def register_media_ended_signal_handler():
         obs.signal_handler_connect(signal_handler, "media_ended", media_ended_handler)
         obs.signal_handler_connect(signal_handler, "show", show_handler)
         obs.signal_handler_connect(signal_handler, "hide", hide_handler)
+        pass
 
 
 def deregister_media_ended_signal_handler():
@@ -120,6 +126,7 @@ def deregister_media_ended_signal_handler():
         obs.signal_handler_disconnect(signal_handler, "media_ended", media_ended_handler)
         obs.signal_handler_disconnect(signal_handler, "show", show_handler)
         obs.signal_handler_disconnect(signal_handler, "hide", hide_handler)
+        pass
 
 
 def show_handler(call_data):
@@ -155,13 +162,12 @@ def play_video(video_path):
     with obs_helper.Source(video_source_name) as video_source:
         if not video_source:
             return
-        media_state = obs.obs_source_media_get_state(video_source)
-        if not media_state == obs.OBS_MEDIA_STATE_PLAYING:
-            with obs_helper.SourceSettings(video_source) as settings:
-                obs.obs_data_set_string(settings, "local_file", video_path)
-                obs.obs_source_update(video_source, settings)
-                obs.obs_source_media_restart(video_source)
-                print("Video started")
+        # Skipping checking play state here, if we want to play the video we want to play the video. 
+        with obs_helper.SourceSettings(video_source) as settings:
+            obs.obs_data_set_string(settings, "local_file", video_path)
+            obs.obs_source_update(video_source, settings)
+            obs.obs_source_media_restart(video_source)
+            print("Video started")
 
 
 def stop_video():
