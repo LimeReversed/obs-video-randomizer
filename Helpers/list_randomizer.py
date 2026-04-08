@@ -14,8 +14,8 @@ class ListRandomizer(object):
 
     @staticmethod
     def construct_from_json(json_object):
-        new_list_randomizer = ListRandomizer(json_object["list"])
-        new_list_randomizer._current_last_index = json_object["current_last_index"]
+        new_list_randomizer = ListRandomizer(json_object["_list"])
+        new_list_randomizer._current_last_index = json_object["_current_last_index"]
         return new_list_randomizer
 
     def get_next_element(self):
