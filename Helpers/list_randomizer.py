@@ -6,6 +6,7 @@ class ListRandomizer(object):
 
     def __init__(self, new_list):
         self._list = new_list.copy()
+        # The index of the last element that has not been used yet. If this is -1, all elements have been used and the list can be reset.
         self._current_last_index = len(new_list) - 1
 
     def to_json(self):
@@ -34,16 +35,23 @@ class ListRandomizer(object):
         return next_element
 
     def merge(self, new_list_randomizer: "ListRandomizer"):
+        """Merges the given list randomizer into this list randomizer."""
 
-        used = new_list_randomizer._list[new_list_randomizer._current_last_index:len(new_list_randomizer._list)]
+        # start:end = The first element behind the last unused : The length of the whole list. (Not -1 because end is up to but not including)
+        used = new_list_randomizer._list[new_list_randomizer._current_last_index +1:len(new_list_randomizer._list)]
+        print(f"Used: {used}")
         not_used = new_list_randomizer._list[0:new_list_randomizer._current_last_index + 1]
+        print(f"Not used: {not_used}")
         self.extend(not_used, False)
         self.extend(used, True)
 
     def extend(self, new_list: list, mark_as_used: bool):
+        """Extends the list with the given list. The lists used as arguments will be mutaded by this function."""
+        self._current_last_index += len(new_list)
 
         if mark_as_used:
             self._list.extend(new_list)
         else:
             new_list.extend(self._list)
-            self._current_last_index += len(new_list)
+            self._list = new_list
+

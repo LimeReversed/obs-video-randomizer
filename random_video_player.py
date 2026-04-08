@@ -74,11 +74,12 @@ def script_description():
 def script_update(settings):
     global video_source_name
     global video_files
+    global list_randomizer
 
     video_source_name = obs.obs_data_get_string(settings, "video_source_name")
     data_array = obs.obs_data_get_array(settings, "folder_list")
     video_files = obs_helper.extract_array_from_array_data(data_array)
-
+    list_randomizer = ListRandomizer(video_files)
 
 def script_properties():
     props = obs.obs_properties_create()
@@ -113,6 +114,8 @@ def deregister_media_ended_signal_handler():
     global video_source_name
 
     with obs_helper.Source(video_source_name) as source:
+        if not source:
+            return
         signal_handler = obs.obs_source_get_signal_handler(source)
         obs.signal_handler_disconnect(signal_handler, "media_ended", media_ended_handler)
         obs.signal_handler_disconnect(signal_handler, "show", show_handler)
@@ -150,6 +153,8 @@ def play_video(video_path):
     global video_source_name
 
     with obs_helper.Source(video_source_name) as video_source:
+        if not video_source:
+            return
         media_state = obs.obs_source_media_get_state(video_source)
         if not media_state == obs.OBS_MEDIA_STATE_PLAYING:
             with obs_helper.SourceSettings(video_source) as settings:
@@ -163,6 +168,8 @@ def stop_video():
     global video_source_name
 
     with obs_helper.Source(video_source_name) as video_source:
+        if not video_source:
+            return
         media_state = obs.obs_source_media_get_state(video_source)
         if media_state == obs.OBS_MEDIA_STATE_PLAYING:
             obs.obs_source_media_stop(video_source)
