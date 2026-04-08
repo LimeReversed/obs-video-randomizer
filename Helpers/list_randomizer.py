@@ -5,7 +5,7 @@ import json
 class ListRandomizer(object):
 
     def __init__(self, new_list):
-        self._list = new_list
+        self._list = new_list.copy()
         self._current_last_index = len(new_list) - 1
 
     def to_json(self):
