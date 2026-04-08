@@ -16,9 +16,11 @@ class InitializeArrayRandomizer(TestCase):
             next_element = self.list_randomizer.get_next_element()
             if next_element in used_elements:
                 self.fail()
+            used_elements.append(next_element)
 
-        print(self.list)
-        self.assertTrue(len(self.list), 10)
+        print(f"Original list: {self.list}")
+        print(f"Used elements: {used_elements}")
+        self.assertTrue(len(self.list) == len(used_elements))
 
     def test_elements_should_not_repeat_runs_multiple_times(self):
         used_elements = []
@@ -29,9 +31,11 @@ class InitializeArrayRandomizer(TestCase):
                 next_element = self.list_randomizer.get_next_element()
                 if next_element in used_elements:
                     self.fail()
+                used_elements.append(next_element)
 
-            print(self.list)
-            self.assertTrue(len(self.list), 10)
+            print(f"Original list: {self.list}")
+            print(f"Used elements: {used_elements}")
+            self.assertFalse(not len(self.list) == len(used_elements))
             used_elements = []
 
         pass
