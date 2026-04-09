@@ -10,7 +10,6 @@ initialized = False
 
 video_files = []
 list_randomizer: ListRandomizer
-list_randomizer_file_path = file_helper.get_script_env_folder_path() + r"\list_randomizer.json"
 
 # OBS script functions
 def initialize():
@@ -46,7 +45,6 @@ def cleanup():
         stop_video()
         obs.obs_frontend_remove_event_callback(on_event)
         deregister_media_ended_signal_handler()
-        # file_helper.save_json(list_randomizer.to_json(), list_randomizer_file_path)
         initialized = False
         print("Cleanup done")
 
