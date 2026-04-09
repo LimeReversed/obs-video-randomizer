@@ -59,7 +59,7 @@ def script_load(settings):
     video_files = obs_helper.extract_array_from_array_data(data_array)
     print("Starting initialization...")
 
-    obs.timer_add(initialized, 3000)
+    obs.timer_add(initialize, 3000)
 
 
 def script_unload():
