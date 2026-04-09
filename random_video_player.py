@@ -12,7 +12,6 @@ video_files = []
 list_randomizer: ListRandomizer
 list_randomizer_file_path = file_helper.get_script_env_folder_path() + r"\list_randomizer.json"
 
-
 # OBS script functions
 def initialize():
     global video_files
@@ -51,11 +50,6 @@ def cleanup():
         initialized = False
         print("Cleanup done")
 
-def check_initialized():
-    if obs.obs_initialized():
-        obs.remove_current_callback()
-        initialize()
-
 def script_load(settings):
     global video_source_name
     global video_files
@@ -65,7 +59,7 @@ def script_load(settings):
     video_files = obs_helper.extract_array_from_array_data(data_array)
     print("Starting initialization...")
 
-    obs.timer_add(check_initialized, 1000)
+    obs.timer_add(initialized, 3000)
 
 
 def script_unload():
@@ -100,7 +94,6 @@ def script_properties():
 
 # Events
 def on_event(event):
-    # print(event)
     if event == obs.OBS_FRONTEND_EVENT_SCRIPTING_SHUTDOWN:
         cleanup()
 
